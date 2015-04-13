@@ -1,50 +1,49 @@
-/*
- * grunt-lokalise
- * https://github.com/yeroshek/grunt-lokalise
- *
- * Copyright (c) 2015 Rodion Yeroshek
- * Licensed under the MIT license.
- */
-
 'use strict';
 
 module.exports = function(grunt) {
 
-  // Please see the Grunt documentation for more information regarding task
-  // creation: http://gruntjs.com/creating-tasks
+	grunt.registerMultiTask('lokalise', 'Grunt plugin for i18n service lokali.se', function () {
+		var options = this.data,
+			done = this.async(),
+			files = this.files[0].src,
+			fs = require('fs-sync'),
+			exec = require('child_process').exec,
+			totalSendFiles = 0,
+			sentFiles = 0;
+		
+		files.forEach(function (file) {
+			var parts = file.split('/'),
+				language = parts[parts.length - 2],
+				newName = 'lokalise/' + language + '/' + file.replace(/\//g, '__').replace('__' + language, ''),
+				curl = 'curl -X POST https://lokali.se/api/project/import ' +
+					'-F "api_token=' + options.apiToken + '" ' +
+					'-F "id=' + options.projectId + '" ' +
+					'-F file=@"' + newName + '" ' +
+					'-F "lang_iso=' + language + '" ' +
+					'-F "replace=1" ' +
+					'-F "fill_empty=0" ' +
+					'-F "distinguish=1" ' +
+					'-F "hidden=0"';
 
-  grunt.registerMultiTask('lokalise', 'Grunt plugin for i18n service lokali.se', function() {
-    // Merge task-specific and/or target-specific options with these defaults.
-    var options = this.options({
-      punctuation: '.',
-      separator: ', '
-    });
+			totalSendFiles ++;
+			fs.copy(file, newName);
+			
+			exec(curl, function (error, stdout, stderr) {
+				if ( ! error) {
+					console.log('Sent ' + file + '... OK');
+					console.log(stdout);
+				} else {
+					console.log('Error sending ' + file);
+				}
 
-    // Iterate over all specified file groups.
-    this.files.forEach(function(f) {
-      // Concat specified files.
-      var src = f.src.filter(function(filepath) {
-        // Warn on and remove invalid source files (if nonull was set).
-        if (!grunt.file.exists(filepath)) {
-          grunt.log.warn('Source file "' + filepath + '" not found.');
-          return false;
-        } else {
-          return true;
-        }
-      }).map(function(filepath) {
-        // Read file source.
-        return grunt.file.read(filepath);
-      }).join(grunt.util.normalizelf(options.separator));
+				sentFiles++;
 
-      // Handle options.
-      src += options.punctuation;
+				if (totalSendFiles === sentFiles) {
+					done(true);
+				}
+			});
+		});
 
-      // Write the destination file.
-      grunt.file.write(f.dest, src);
-
-      // Print a success message.
-      grunt.log.writeln('File "' + f.dest + '" created.');
-    });
-  });
+	});
 
 };
