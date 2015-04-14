@@ -10,8 +10,10 @@ module.exports = function(grunt) {
 			exec = require('child_process').exec,
 			totalSendFiles = 0,
 			sentFiles = 0,
-			filesOriginalPaths = {};
-		
+			filesOriginalPaths = {},
+			pushLanguages = grunt.option('lang') ? grunt.option('lang').split(',') : 'all',
+			pushFiles = grunt.option('file') ? grunt.option('file').split(',') : 'all';
+
 		files.forEach(function (file) {
 			var parts = file.split('/'),
 				language = parts[parts.length - 2],
@@ -21,12 +23,16 @@ module.exports = function(grunt) {
 					'-F "id=' + options.projectId + '" ' +
 					'-F file=@"' + file + '" ' +
 					'-F "lang_iso=' + language + '" ' +
-					'-F "replace=0" ' +
+					'-F "replace=' + (grunt.option('replace') ? '1' : '0') + '" ' +
 					'-F "fill_empty=0" ' +
 					'-F "distinguish=1" ' +
 					'-F "hidden=0"';
 
 			filesOriginalPaths[fileName] = file;
+			
+			if (pushLanguages !== 'all' && pushLanguages.indexOf(language) === -1) { return; }
+			if (pushFiles !== 'all' && pushFiles.indexOf(fileName) === -1) { return; }
+
 			totalSendFiles ++;
 			
 			exec(curl, function (error, stdout, stderr) {
@@ -50,7 +56,7 @@ module.exports = function(grunt) {
 					}
 					
 				} else {
-					console.log('Error sending ' + file);
+					console.log('Error sending ' + file, error);
 				}
 
 				sentFiles++;
