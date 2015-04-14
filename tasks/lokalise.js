@@ -9,24 +9,25 @@ module.exports = function(grunt) {
 			fs = require('fs-sync'),
 			exec = require('child_process').exec,
 			totalSendFiles = 0,
-			sentFiles = 0;
+			sentFiles = 0,
+			filesOriginalPaths = {};
 		
 		files.forEach(function (file) {
 			var parts = file.split('/'),
 				language = parts[parts.length - 2],
-				newName = 'lokalise/' + language + '/' + file.replace(/\//g, '__').replace('__' + language, ''),
+				fileName = parts[parts.length - 1],
 				curl = 'curl -X POST https://lokali.se/api/project/import ' +
 					'-F "api_token=' + options.apiToken + '" ' +
 					'-F "id=' + options.projectId + '" ' +
-					'-F file=@"' + newName + '" ' +
+					'-F file=@"' + file + '" ' +
 					'-F "lang_iso=' + language + '" ' +
 					'-F "replace=0" ' +
 					'-F "fill_empty=0" ' +
 					'-F "distinguish=1" ' +
 					'-F "hidden=0"';
 
+			filesOriginalPaths[fileName] = file;
 			totalSendFiles ++;
-			fs.copy(file, newName);
 			
 			exec(curl, function (error, stdout, stderr) {
 				if ( ! error) {
@@ -137,17 +138,16 @@ module.exports = function(grunt) {
 			filenames.forEach(function (filename) {
 				var parts = filename.split('/'),
 					language = parts[1],
-					originalParts = parts[2].split('__'),
-					originalPath;
+					fileName = parts[2],
+					original = filesOriginalPaths[fileName],
+					originalParts = original.split('/');
 
-				originalParts.splice(originalParts.length - 1, 0, language);
-				originalPath = originalParts.join('/');
+				originalParts[originalParts.length - 2] = language;
 
-				fs.copy(filename, originalPath, { force: true });
+				fs.copy(filename, originalParts.join('/'), { force: true });
 			});
 
 			fs.remove('lokalise/');
-
 			done(true);
 		}
 
