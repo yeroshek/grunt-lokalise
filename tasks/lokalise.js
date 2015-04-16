@@ -11,63 +11,77 @@ module.exports = function(grunt) {
 			totalSendFiles = 0,
 			sentFiles = 0,
 			filesOriginalPaths = {},
+			push = true,
+			pull = true,
 			pushLanguages = grunt.option('lang') ? grunt.option('lang').split(',') : 'all',
 			pushFiles = grunt.option('file') ? grunt.option('file').split(',') : 'all';
 
-		files.forEach(function (file) {
-			var parts = file.split('/'),
-				language = parts[parts.length - 2],
-				fileName = parts[parts.length - 1],
-				curl = 'curl -X POST https://lokali.se/api/project/import ' +
-					'-F "api_token=' + options.apiToken + '" ' +
-					'-F "id=' + options.projectId + '" ' +
-					'-F file=@"' + file + '" ' +
-					'-F "lang_iso=' + language + '" ' +
-					'-F "replace=' + (grunt.option('replace') ? '1' : '0') + '" ' +
-					'-F "fill_empty=0" ' +
-					'-F "distinguish=1" ' +
-					'-F "hidden=0"';
+		if (grunt.option('push')) {	pull = false; }
+		if (grunt.option('pull')) { push = false; }
+		if ( ! pull && ! push) { pull = true; push = true; }
 
-			filesOriginalPaths[fileName] = file;
-			
-			if (pushLanguages !== 'all' && pushLanguages.indexOf(language) === -1) { return; }
-			if (pushFiles !== 'all' && pushFiles.indexOf(fileName) === -1) { return; }
+		if (files.length) {
+			files.forEach(function (file) {
+				var parts = file.split('/'),
+					language = parts[parts.length - 2],
+					fileName = parts[parts.length - 1],
+					curl = 'curl -X POST https://lokali.se/api/project/import ' +
+						'-F "api_token=' + options.apiToken + '" ' +
+						'-F "id=' + options.projectId + '" ' +
+						'-F file=@"' + file + '" ' +
+						'-F "lang_iso=' + language + '" ' +
+						'-F "replace=' + (grunt.option('replace') ? '1' : '0') + '" ' +
+						'-F "fill_empty=0" ' +
+						'-F "distinguish=1" ' +
+						'-F "hidden=0"';
 
-			totalSendFiles ++;
-			
-			exec(curl, function (error, stdout, stderr) {
-				if ( ! error) {
-					try {
-						var answer = JSON.parse(stdout);	
-					
-					} catch (e) {
-						console.log(curl);
-						console.log('Non-valid JSON', stdout);
+				filesOriginalPaths[fileName] = file;
+				
+				if (pushLanguages !== 'all' && pushLanguages.indexOf(language) === -1) { return; }
+				if (pushFiles !== 'all' && pushFiles.indexOf(fileName) === -1) { return; }
+				if ( ! push) { return; }
+				totalSendFiles ++;
+				
+				exec(curl, function (error, stdout, stderr) {
+					if ( ! error) {
+						try {
+							var answer = JSON.parse(stdout);	
 						
-						done(false);
-						return false;
-					}
-					
-					
-					if (answer.response && answer.response.status && answer.response.status === 'success') {
-						console.log('Sent ' + file + '... OK');	
+						} catch (e) {
+							console.log(curl);
+							console.log('Non-valid JSON', stdout);
+							
+							done(false);
+							return false;
+						}
+						
+						
+						if (answer.response && answer.response.status && answer.response.status === 'success') {
+							console.log('Sent ' + file + '... OK');	
+						} else {
+							console.log('Error sending ' + file + ': ' + answer.response.message);
+						}
+						
 					} else {
-						console.log('Error sending ' + file + ': ' + answer.response.message);
+						console.log('Error sending ' + file, error);
 					}
-					
-				} else {
-					console.log('Error sending ' + file, error);
-				}
 
-				sentFiles++;
+					sentFiles++;
 
-				if (totalSendFiles === sentFiles) {
-					downloadData();
-				}
+					if (totalSendFiles === sentFiles) {
+						downloadData();
+					}
+				});
 			});
-		});
+		} else {
+			downloadData();
+		}
 
+		if ( ! push) { downloadData(); }
+		
 		function downloadData() {
+			if ( ! pull) { done(true); return; }
+
 			var curl = 'curl -X POST https://lokali.se/api/project/export ' +
      			'-d "api_token=' + options.apiToken + '" ' +
      			'-d "id=' + options.projectId + '" ' +
