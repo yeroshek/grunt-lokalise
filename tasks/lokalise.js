@@ -14,7 +14,8 @@ module.exports = function(grunt) {
 			push = true,
 			pull = true,
 			pushLanguages = grunt.option('lang') ? grunt.option('lang').split(',') : 'all',
-			pushFiles = grunt.option('file') ? grunt.option('file').split(',') : 'all';
+			pushFiles = grunt.option('file') ? grunt.option('file').split(',') : 'all',
+			curlQueries = [];
 
 		if (grunt.option('push')) {	pull = false; }
 		if (grunt.option('pull')) { push = false; }
@@ -40,46 +41,73 @@ module.exports = function(grunt) {
 				if (pushLanguages !== 'all' && pushLanguages.indexOf(language) === -1) { return; }
 				if (pushFiles !== 'all' && pushFiles.indexOf(fileName) === -1) { return; }
 				if ( ! push) { return; }
-				totalSendFiles ++;
 				
-				exec(curl, function (error, stdout, stderr) {
-					if ( ! error) {
-						try {
-							var answer = JSON.parse(stdout);	
-						
-						} catch (e) {
-							console.log(curl);
-							console.log('Non-valid JSON', stdout);
-							
-							done(false);
-							return false;
-						}
-						
-						
-						if (answer.response && answer.response.status && answer.response.status === 'success') {
-							console.log('Sent ' + file + '... OK');	
-						} else {
-							console.log('Error sending ' + file + ': ' + answer.response.message);
-						}
-						
-					} else {
-						console.log('Error sending ' + file, error);
-					}
-
-					sentFiles++;
-
-					if (totalSendFiles === sentFiles) {
-						downloadData();
-					}
-				});
+				curlQueries.push({ curl: curl, running: false, fileName: file });
 			});
+
+			pushData(curlQueries);
+
 		} else {
 			downloadData();
 		}
 
 		if ( ! push) { downloadData(); }
+
+		function pushData (curlQueries) {
+			var maxConcurrent = 10,
+				concurrentCalls = 0,
+				sentFiles = 0;
+
+			runQueueTasks();
+
+			function runQueueTasks () {
+				curlQueries.forEach(function (task) {
+
+					if (concurrentCalls < maxConcurrent && task && ! task.running) {
+						task.running = true;
+						concurrentCalls ++;
+
+						exec(task.curl, function (error, stdout, stderr) {
+
+							if ( ! error) {
+								try {
+									var answer = JSON.parse(stdout);	
+								
+								} catch (e) {
+									console.log(curl);
+									console.log('Non-valid JSON', stdout);
+									
+									done(false);
+									return false;
+								}
+								
+								
+								if (answer.response && answer.response.status && answer.response.status === 'success') {
+									console.log('Sent ' + task.fileName + '... OK');	
+								} else {
+									console.log('Error sending ' + task.fileName + ': ' + answer.response.message);
+								}
+								
+							} else {
+								console.log('Error sending ' + task.fileName, error);
+							}
+
+							sentFiles++;
+							concurrentCalls--;
+							task = null;
+
+							if (curlQueries.length <= sentFiles) {
+								downloadData();
+							} else {
+								runQueueTasks();
+							}
+						});
+					}
+				});
+			}
+		}
 		
-		function downloadData() {
+		function downloadData () {
 			if ( ! pull) { done(true); return; }
 
 			var curl = 'curl -X POST https://lokali.se/api/project/export ' +
