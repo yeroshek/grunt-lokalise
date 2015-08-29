@@ -54,7 +54,7 @@ module.exports = function(grunt) {
 		if ( ! push) { downloadData(); }
 
 		function pushData (curlQueries) {
-			var maxConcurrent = 10,
+			var maxConcurrent = 1,
 				concurrentCalls = 0,
 				sentFiles = 0;
 
@@ -64,44 +64,49 @@ module.exports = function(grunt) {
 				curlQueries.forEach(function (task) {
 
 					if (concurrentCalls < maxConcurrent && task && ! task.running) {
-						task.running = true;
 						concurrentCalls ++;
 
-						exec(task.curl, function (error, stdout, stderr) {
+						setTimeout(runTask.bind(this, task), 5000);
+					}
+				});
+			}
 
-							if ( ! error) {
-								try {
-									var answer = JSON.parse(stdout);	
-								
-								} catch (e) {
-									console.log(curl);
-									console.log('Non-valid JSON', stdout);
-									
-									done(false);
-									return false;
-								}
-								
-								
-								if (answer.response && answer.response.status && answer.response.status === 'success') {
-									console.log('Sent ' + task.fileName + '... OK');	
-								} else {
-									console.log('Error sending ' + task.fileName + ': ' + answer.response.message);
-								}
-								
-							} else {
-								console.log('Error sending ' + task.fileName, error);
-							}
+			function runTask (task) {
+				task.running = true;
 
-							sentFiles++;
-							concurrentCalls--;
-							task = null;
+				exec(task.curl, function (error, stdout, stderr) {
 
-							if (curlQueries.length <= sentFiles) {
-								downloadData();
-							} else {
-								runQueueTasks();
-							}
-						});
+					if ( ! error) {
+						try {
+							var answer = JSON.parse(stdout);	
+						
+						} catch (e) {
+							console.log(curl);
+							console.log('Non-valid JSON', stdout);
+							
+							done(false);
+							return false;
+						}
+						
+						
+						if (answer.response && answer.response.status && answer.response.status === 'success') {
+							console.log('Sent ' + task.fileName + '... OK');	
+						} else {
+							console.log('Error sending ' + task.fileName + ': ' + answer.response.message);
+						}
+						
+					} else {
+						console.log('Error sending ' + task.fileName, error);
+					}
+
+					sentFiles++;
+					concurrentCalls--;
+					task = null;
+
+					if (curlQueries.length <= sentFiles) {
+						downloadData();
+					} else {
+						runQueueTasks();
 					}
 				});
 			}

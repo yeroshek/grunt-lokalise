@@ -3,17 +3,17 @@
 > Grunt plugin for i18n service lokali.se
 
 ## Getting Started
-This plugin requires Grunt `~0.4.5`
+Grunt-lokalise provides a command line interface to sync your i18n files with http://lokali.se
 
-If you haven't used [Grunt](http://gruntjs.com/) before, be sure to check out the [Getting Started](http://gruntjs.com/getting-started) guide, as it explains how to create a [Gruntfile](http://gruntjs.com/sample-gruntfile) as well as install and use Grunt plugins. Once you're familiar with that process, you may install this plugin with this command:
+Install it:
 
-```shell
+```
 npm install grunt-lokalise --save-dev
 ```
 
-Once the plugin has been installed, it may be enabled inside your Gruntfile with this line of JavaScript:
+Add a line to your Grunfile:
 
-```js
+```
 grunt.loadNpmTasks('grunt-lokalise');
 ```
 
@@ -22,68 +22,31 @@ grunt.loadNpmTasks('grunt-lokalise');
 ### Overview
 In your project's Gruntfile, add a section named `lokalise` to the data object passed into `grunt.initConfig()`.
 
-```js
+```
 grunt.initConfig({
   lokalise: {
-    options: {
-      // Task-specific options go here.
-    },
-    your_target: {
-      // Target-specific file lists and/or options go here.
+    all: {
+      apiToken: 'YOUR API TOKEN HERE',
+      projectId: 'YOUR PROJECT ID AT LOKALI.SE',
+
+      // Put all of your lang files here
+      files: {
+        src: [
+          'application/language/**/*.php',
+          'js/language/**/*.json'
+        ]
+      }
     },
   },
 });
 ```
 
-### Options
+Lokali.se wants your filenames to be identical for different languages, so follow a file structure like this:
 
-#### options.separator
-Type: `String`
-Default value: `',  '`
-
-A string value that is used to do something with whatever.
-
-#### options.punctuation
-Type: `String`
-Default value: `'.'`
-
-A string value that is used to do something else with whatever else.
+language/en/common.json
+language/ru/common.json
 
 ### Usage Examples
 
-#### Default Options
-In this example, the default options are used to do something with whatever. So if the `testing` file has the content `Testing` and the `123` file had the content `1 2 3`, the generated result would be `Testing, 1 2 3.`
+At your project directory type ``grunt lokalise``. Plugin will push your files and then pull latest changes from lokali.se afterwards. You can use ``grunt lokalise --push`` and ``grunt lokalise --pull`` to perform only one action.
 
-```js
-grunt.initConfig({
-  lokalise: {
-    options: {},
-    files: {
-      'dest/default_options': ['src/testing', 'src/123'],
-    },
-  },
-});
-```
-
-#### Custom Options
-In this example, custom options are used to do something else with whatever else. So if the `testing` file has the content `Testing` and the `123` file had the content `1 2 3`, the generated result in this case would be `Testing: 1 2 3 !!!`
-
-```js
-grunt.initConfig({
-  lokalise: {
-    options: {
-      separator: ': ',
-      punctuation: ' !!!',
-    },
-    files: {
-      'dest/default_options': ['src/testing', 'src/123'],
-    },
-  },
-});
-```
-
-## Contributing
-In lieu of a formal styleguide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Lint and test your code using [Grunt](http://gruntjs.com/).
-
-## Release History
-_(Nothing yet)_
