@@ -2,7 +2,7 @@
 
 module.exports = function(grunt) {
 
-	grunt.registerMultiTask('lokalise', 'Grunt plugin for i18n service lokali.se', function () {
+	grunt.registerMultiTask('lokalise', 'Grunt plugin for i18n service lokalise.co', function () {
 		var options = this.data,
 			done = this.async(),
 			files = this.files[0].src,
@@ -26,7 +26,7 @@ module.exports = function(grunt) {
 				var parts = file.split('/'),
 					language = parts[parts.length - 2],
 					fileName = parts[parts.length - 1],
-					curl = 'curl -X POST https://lokali.se/api/project/import ' +
+					curl = 'curl -X POST https://lokalise.co/api/project/import ' +
 						'-F "api_token=' + options.apiToken + '" ' +
 						'-F "id=' + options.projectId + '" ' +
 						'-F file=@"' + file + '" ' +
@@ -115,7 +115,7 @@ module.exports = function(grunt) {
 		function downloadData () {
 			if ( ! pull) { done(true); return; }
 
-			var curl = 'curl -X POST https://lokali.se/api/project/export ' +
+			var curl = 'curl -X POST https://lokalise.co/api/project/export ' +
      			'-d "api_token=' + options.apiToken + '" ' +
      			'-d "id=' + options.projectId + '" ' +
      			'-d "type=json" ' +
@@ -151,12 +151,12 @@ module.exports = function(grunt) {
 		}
 
 		function extractData(file) {
-			var curl = 'curl -L -O http://lokali.se/' + file,
+			var curl = 'curl -L -O http://lokalise.co/' + file,
 				parts = file.split('/'),
 				fileName = parts[parts.length - 1],
 				unzip;
 
-			console.log('Downloading bundle from lokali.se/' + file + '...');
+			console.log('Downloading bundle from lokalise.co/' + file + '...');
 			exec(curl, function (error, stdout, stderr) {
 				if ( ! error) {
 

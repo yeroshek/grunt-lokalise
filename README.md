@@ -1,9 +1,9 @@
 # grunt-lokalise
 
-> Grunt plugin for i18n service lokali.se
+> Grunt plugin for i18n service lokalise.co
 
 ## Getting Started
-Grunt-lokalise provides a command line interface to sync your i18n files with http://lokali.se
+Grunt-lokalise provides a command line interface to sync your i18n files with http://lokalise.co
 
 Install it:
 
@@ -27,7 +27,7 @@ grunt.initConfig({
   lokalise: {
     all: {
       apiToken: 'YOUR API TOKEN HERE',
-      projectId: 'YOUR PROJECT ID AT LOKALI.SE',
+      projectId: 'YOUR PROJECT ID AT lokalise.co',
 
       // Put all of your lang files here
       files: {
@@ -41,12 +41,12 @@ grunt.initConfig({
 });
 ```
 
-Lokali.se wants your filenames to be identical for different languages, so follow a file structure like this:
+lokalise.co wants your filenames to be identical for different languages, so follow a file structure like this:
 
 language/en/common.json
 language/ru/common.json
 
 ### Usage Examples
 
-At your project directory type ``grunt lokalise``. Plugin will push your files and then pull latest changes from lokali.se afterwards. You can use ``grunt lokalise --push`` and ``grunt lokalise --pull`` to perform only one action.
+At your project directory type ``grunt lokalise``. Plugin will push your files and then pull latest changes from lokalise.co afterwards. You can use ``grunt lokalise --push`` and ``grunt lokalise --pull`` to perform only one action.
 
