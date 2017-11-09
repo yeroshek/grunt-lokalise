@@ -185,6 +185,30 @@ module.exports = function(grunt) {
 			});
 		}
 
+		/**
+		 * Конвертит json файл в php
+		 *
+		 * @param filename
+		 * @returns {string}
+		 */
+		function jsonToPhp(filename) {
+
+			var filework = require('fs');
+			var div = filename.split('.');
+
+			var newFilename = div[0] + '.php';
+			var contents = filework.readFileSync(filename, 'utf8');
+			var json = JSON.parse(contents);
+
+			var newContent = "<?php \n";
+			for(var key in json){
+				newContent = newContent + ("$lang[\"" + key + "\"] = \""+ json[key] + "\";\n");
+			};
+			filework.writeFileSync(newFilename, newContent);
+			return newFilename;
+
+		}
+
 		function processFiles(filenames) {
 			console.log('Writing ' + filenames.length + ' files...');
 
@@ -192,8 +216,16 @@ module.exports = function(grunt) {
 				var parts = filename.split('/'),
 					language = parts[1],
 					fileName = parts[2],
-					original = filesOriginalPaths[fileName],
-					originalParts = original.split('/');
+					original = filesOriginalPaths[fileName];
+				if (original === undefined) {
+					filename = jsonToPhp(filename);
+					parts = filename.split('/');
+					language = parts[1];
+					fileName = parts[2];
+					original = filesOriginalPaths[fileName];
+
+				}
+				var originalParts = original.split('/');
 
 				originalParts[originalParts.length - 2] = language;
 
