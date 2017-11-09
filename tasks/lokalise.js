@@ -200,9 +200,9 @@ module.exports = function(grunt) {
 			var contents = filework.readFileSync(filename, 'utf8');
 			var json = JSON.parse(contents);
 
-			var newContent = "<?php \n";
+			var newContent = "<?php\n\n";
 			for(var key in json){
-				newContent = newContent + ("$lang[\"" + key + "\"] = \""+ json[key] + "\";\n");
+				newContent = newContent + ('$lang["' + key + '"] = "'+ json[key] + '";' + "\n");
 			};
 			filework.writeFileSync(newFilename, newContent);
 			return newFilename;
