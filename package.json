@@ -1,7 +1,7 @@
 {
   "name": "grunt-lokalise",
   "description": "Grunt plugin for i18n service lokali.se",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "homepage": "https://github.com/yeroshek/grunt-lokalise",
   "author": {
     "name": "Rodion Yeroshek",

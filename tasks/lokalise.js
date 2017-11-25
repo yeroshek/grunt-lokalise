@@ -119,7 +119,7 @@ module.exports = function(grunt) {
      			'-d "api_token=' + options.apiToken + '" ' +
      			'-d "id=' + options.projectId + '" ' +
      			'-d "type=json" ' +
-     			'-d "use_original=1" ';
+     			'-d "use_original=2" ';
 
      		console.log('Generating bundle...');
 
