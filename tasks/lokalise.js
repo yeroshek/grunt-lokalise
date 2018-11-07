@@ -189,6 +189,8 @@ module.exports = function(grunt) {
 			console.log('Writing ' + filenames.length + ' files...');
 
 			filenames.forEach(function (filename) {
+				cleanup_json_file_from_slashes(filename);
+
 				var parts = filename.split('/'),
 					language = parts[1],
 					fileName = parts[2],
@@ -204,6 +206,26 @@ module.exports = function(grunt) {
 			done(true);
 		}
 
+		function cleanup_json_file_from_slashes(filename) {
+			if (filename.indexOf('.json') === -1) {
+				return false;
+			}
+
+			var raw = fs.read(filename);
+			var json = JSON.parse(raw);
+
+			for (var i in json) {
+				var value = json[i];
+				if (typeof value === 'string' || value instanceof String)
+				{
+					// replacing \" with " because it should be already unslashed inside json
+					value = value.replace(/\\"/g, '"');
+				}
+
+				json[i] = value;
+			}
+			fs.write(filename, JSON.stringify(json, undefined, 2));
+		}
 	});
 
 };
