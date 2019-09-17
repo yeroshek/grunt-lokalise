@@ -2,7 +2,7 @@
 
 module.exports = function(grunt) {
 
-	grunt.registerMultiTask('lokalise', 'Grunt plugin for i18n service lokalise.co', function () {
+	grunt.registerMultiTask('lokalise', 'Grunt plugin for i18n service lokalise.com', function () {
 		var options = this.data,
 			done = this.async(),
 			files = this.files[0].src,
@@ -151,12 +151,12 @@ module.exports = function(grunt) {
 		}
 
 		function extractData(file) {
-			var curl = 'curl -L -O http://api.lokalise.com/' + file,
+			var curl = 'curl -L -O https://api.lokalise.com/' + file,
 				parts = file.split('/'),
 				fileName = parts[parts.length - 1],
 				unzip;
 
-			console.log('Downloading bundle from lokalise.co/' + file + '...');
+			console.log('Downloading bundle from api.lokalise.com/' + file + '...');
 			exec(curl, function (error, stdout, stderr) {
 				if ( ! error) {
 
