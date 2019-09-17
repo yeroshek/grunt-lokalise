@@ -26,7 +26,7 @@ module.exports = function(grunt) {
 				var parts = file.split('/'),
 					language = parts[parts.length - 2],
 					fileName = parts[parts.length - 1],
-					curl = 'curl -X POST https://lokalise.co/api/project/import ' +
+					curl = 'curl -X POST https://api.lokalise.com/api/project/import ' +
 						'-F "api_token=' + options.apiToken + '" ' +
 						'-F "id=' + options.projectId + '" ' +
 						'-F file=@"' + file + '" ' +
@@ -81,7 +81,7 @@ module.exports = function(grunt) {
 							var answer = JSON.parse(stdout);	
 						
 						} catch (e) {
-							console.log(curl);
+							console.log(task.curl);
 							console.log('Non-valid JSON', stdout);
 							
 							done(false);
@@ -115,7 +115,7 @@ module.exports = function(grunt) {
 		function downloadData () {
 			if ( ! pull) { done(true); return; }
 
-			var curl = 'curl -X POST https://lokalise.co/api/project/export ' +
+			var curl = 'curl -X POST https://api.lokalise.com/api/project/export ' +
      			'-d "api_token=' + options.apiToken + '" ' +
      			'-d "id=' + options.projectId + '" ' +
      			'-d "type=json" ' +
@@ -151,7 +151,7 @@ module.exports = function(grunt) {
 		}
 
 		function extractData(file) {
-			var curl = 'curl -L -O http://lokalise.co/' + file,
+			var curl = 'curl -L -O http://api.lokalise.com/' + file,
 				parts = file.split('/'),
 				fileName = parts[parts.length - 1],
 				unzip;
